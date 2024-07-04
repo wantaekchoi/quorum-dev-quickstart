@@ -276,7 +276,10 @@ x-chainlensapi-ref:
     - REINDEX_ENDPOINT=http://chainlensingestion/reindex/
     - MONGO_DB_NAME=epirus
     - MONGO_CREATE_INDICES=true
+    - REDIS_HOST=chainlensredis
+    - REDIS_PORT=6379
   depends_on:
+    - chainlensredis
     - chainlensmongodb
 
 x-chainlensmongodb-ref:
@@ -288,12 +291,18 @@ x-chainlensmongodb-ref:
     - DOCKER_CLIENT_TIMEOUT=900
   entrypoint: mongod --bind_ip "0.0.0.0"
 
+x-chainlensredis-ref:
+  &chainlensredis-def
+  image: redis
+  container_name: chainlensredis
+
 x-chainlensweb-ref:
   &chainlensweb-def
   image: web3labs/epirus-free-web:latest
   container_name: chainlensweb
   environment:
     - API_URL=/api
+    - WS_API_URL=ws://localhost:8090
     - DISPLAY_NETWORK_TAB=disabled
   depends_on:
     - chainlensapi
@@ -647,6 +656,12 @@ services:
     networks:
       quorum-dev-quickstart:
         ipv4_address: 172.16.239.57
+
+  chainlensredis:
+    <<: *chainlensredis-def
+    networks:
+      quorum-dev-quickstart:
+        ipv4_address: 172.16.239.58
 
 {% endif %}
 
